@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { adminOnly, protect } from "../middlewares/authMiddleware";
-import { deleteUser, getUserById, getUsers } from "../controllers/userControllers";
+import { adminOnly, protect } from "../middlewares/authMiddleware.js";
+import {  getUserById, getUsers } from "../controllers/userControllers.js";
 
 
 const router = Router();
 
 router.get("/",protect,adminOnly,getUsers);
 router.get("/:id",protect,getUserById);
-router.get("/:id",protect,adminOnly,deleteUser);
+
 
 export default router;
