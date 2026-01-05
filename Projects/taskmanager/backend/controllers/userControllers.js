@@ -3,7 +3,7 @@ import { Task } from "../models/Task.js";
 
 const getUsers = async (req, res) => {
   try {
-    const users = await User.find({ rolr: "member" }).select("-password");
+    const users = await User.find({ role: "member" }).select("-password");
 
     const userWithTaskCounts = await Promise.all(
       users.map(async (user) => {
