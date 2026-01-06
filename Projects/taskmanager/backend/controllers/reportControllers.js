@@ -1,5 +1,6 @@
 import { Task } from "../models/Task";
 import excelJS from excelJS;
+import { User } from "../models/User";
 
 const exportTasksReport = async (req,res) =>{
     try {
@@ -50,7 +51,73 @@ const exportTasksReport = async (req,res) =>{
 
 const exportUsersReport = async (req,res) =>{
     try {
-        
+      const user = await User.find().select("name email _id").lean();
+      
+      const userTasks = await Task.find().populate(
+        "assignedTo",
+        "name email _id"
+      );
+
+      const userTaskMap = {};
+      users.forEach((user)=>{
+        userTaskMap[user._id] ={
+            name: user.name,
+            email: user.email,
+            taskcount:0,
+            pendingTasks:0,
+            inProgressTasks: 0,
+            completedTasks:0,
+        };
+      });
+
+      userTasks.forEach((task)=>{
+        if(task.assignedTo){
+            task.assignedTo.forEach((assignedUser)=>{
+            if(userTaskMap[assignedUser._id]){
+                userTaskMap[assignedUser._id].taskcount +=1;
+                if(task.status === "Pending"){
+                    userTaskMap[assignedUser._id].pendingTasks +=1; 
+                }
+                else if(task.status === "In Progress"){
+                    userTaskMap[assignedUser._id].inProgressTasks +=1; 
+                }
+                else if(task.status === "Completed"){
+                    userTaskMap[assignedUser._id].completedTasks +=1; 
+                }
+            }
+        });
+    }
+      })
+
+      const workbook = new excelJS.Workbook();
+      const worksheet = new excelJS.addWorksheet(" User Task Report");
+      
+      worksheet.columns = [
+        {header:"User Name", key: "name",width : 30 },
+        {header:"Email", key: "email",width : 40 },
+        {header:"Total Assigned Tasks", key: "taskcount",width : 20},
+        {header:"Pending Tasks", key: "pendingTasks",width : 20 },
+        {header:"In Progress Tasks", key: "inProgressTasks",width : 20 },
+        {header:"Completed Tasks", key: "completedTasks",width : 20},
+      ];
+
+      Object.values(userTaskMap).forEach((user)=>{
+        worksheet.addRow(user);
+      });
+
+       res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        'attachment; filename="tasks_report.xlsx"'
+      );
+
+     return workbook.xlsx.write(res).then(()=>{
+        res.end();
+     }) ;
+
     } catch (error) {
         res.status(500).json({mesage:"Error while exporting user Tasks", error: error.mesage})
     }
