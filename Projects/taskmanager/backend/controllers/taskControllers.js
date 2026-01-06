@@ -221,6 +221,35 @@ const updateTaskStatus = async (res, req) => {
 
 const updateTaskChecklist = async (res, req) => {
   try {
+    const {todoCheckList} = req.body;
+    const task = await Task.findById(req.params.id);
+
+    if(!task) return res.status(404).json({message: "Task not found "});
+
+    if(!task.assignedTo.includes(req.user._id)&& req.user.role !== "admin"){
+      return res.status(403).json({message:"Not Authorized to update checklist"});
+    }
+
+    task.todoCheckList = todoCheckList; // replace with updated checklist 
+
+    // auto - update progress based on checklist completion
+    const completedCount = task.todoCheckList.filter((item) => item.completed).length;
+    const totalItems = task.todoCheckList.length;
+    task.progress = totalItems > 0 ? Math.round((completedCount/totalItems)* 100) : 0;
+
+    //auto - mark task as completed if all items are checked 
+    if(task.progress === 100){
+      task.status = "completed";
+    } else if(task.progress > 0){
+      task.status = "In Progress";
+    } else {
+      task.status = " Pending";
+    }
+
+     await task.save();
+     const updatedTask = await task.findById(req.params.id).populate("assignedTo","name email profileImageUrl");
+
+     res.json({message: "Task checklist updated", task:updatedTask});
   } catch (error) {
     return res
       .status(500)
