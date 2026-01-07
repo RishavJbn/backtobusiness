@@ -1,4 +1,4 @@
-import { Task } from "../models/Task";
+import { Task } from "../models/Task.js";
 
 const getDashboardData = async (res, req) => {
   try {

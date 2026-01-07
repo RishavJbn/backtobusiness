@@ -1,6 +1,6 @@
-import { Task } from "../models/Task";
-import excelJS from excelJS;
-import { User } from "../models/User";
+import { Task } from "../models/Task.js";
+import excelJS from "exceljs";
+import { User } from "../models/User.js";
 
 const exportTasksReport = async (req,res) =>{
     try {

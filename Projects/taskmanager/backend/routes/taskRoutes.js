@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { createTask, deleteTask, getDashboardData, getTaskById, getTasks, getUserDashboardData, updateTask, updateTaskChecklist, updateTaskStatus } from "../controllers/taskControllers";
-import { adminOnly } from "../middlewares/authMiddleware";
+import { createTask, deleteTask, getDashboardData, getTaskById, getTasks, getUserDashboardData, updateTask, updateTaskChecklist, updateTaskStatus } from "../controllers/taskControllers.js";
+import { adminOnly, protect } from "../middlewares/authMiddleware.js";
 
 
 const router = Router();
